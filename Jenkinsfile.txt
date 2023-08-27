@@ -1,0 +1,39 @@
+pipeline {
+    agent any
+    
+    environment {
+        AWS_REGION = 'us-east-1'
+    }
+    
+    stages {
+        stage('List EC2 Instances') {
+            steps {
+                script {
+                    def ec2Instances = awsListInstances()
+                    echo "Current EC2 Instances: ${ec2Instances}"
+                }
+            }
+        }
+        
+        stage('List S3 Buckets') {
+            steps {
+                script {
+                    def s3Buckets = awsListS3Buckets()
+                    echo "Current S3 Buckets: ${s3Buckets}"
+                }
+            }
+        }
+    }
+}
+
+def awsListInstances() {
+    return awsCommand("ec2 describe-instances")
+}
+
+def awsListS3Buckets() {
+    return awsCommand("s3api list-buckets")
+}
+
+def awsCommand(command) {
+    return sh(script: "aws ${command} --region ${AWS_REGION}", returnStdout: true).trim()
+}
